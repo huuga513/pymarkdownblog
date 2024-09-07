@@ -7,13 +7,16 @@ import pygments
 from pygments.formatters import HtmlFormatter
 from index import Index
 from l2m4m import LaTeX2MathMLExtension
+from style import CodeStyle
+from style import PageStyle
 
 def getPkgResourcePath():
     return os.module
 class Repository:
-    def __init__(self, directory, charset="UTF-8"):
+    def __init__(self, directory, styles = [], charset="UTF-8"):
         self.dir = directory
         self.charset = charset
+        self.styles = styles
         # check if the dir exists
         if not Repository.isDirExist(directory):
             raise Exception("Directory not exists!")
@@ -33,31 +36,6 @@ class Repository:
     def getCssPath(self):
         return os.path.join(self.getHtmlRootPath(), "css")
         
-    def getCodeStyleCssName(self):
-        return "styles.css"
-    
-    def getPageStyleCssName(self):
-        return "github-markdown-light.css"
-    
-    def getPageStyleSetting(self):
-        return """
-        <style>
-            .markdown-body {
-                box-sizing: border-box;
-                min-width: 200px;
-                max-width: 980px;
-                margin: 0 auto;
-                padding: 45px;
-            }
-
-            @media (max-width: 767px) {
-                .markdown-body {
-                    padding: 15px;
-                }
-            }
-        </style>
-        """
-    
     def getCssFilePath(self, cssname):
         return os.path.join(self.getCssPath(),cssname)
     
@@ -69,26 +47,21 @@ class Repository:
         return os.path.join("/",relpath)
     
     def generateMdHtmlTemplate(self):
+        styleHeaders = ''.join([style.header(self.localPathToNetPath(self.getCssFilePath(style.getName()))) for style in self.styles])
         return lambda content: f"""
         <meta charset={self.charset}>
-        <link rel="stylesheet" href="{self.localPathToNetPath(self.getCssFilePath(self.getCodeStyleCssName()))}">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{self.localPathToNetPath(self.getCssFilePath(self.getPageStyleCssName()))}">
-        {self.getPageStyleSetting()}
+        {styleHeaders}
         <article class="markdown-body">
         {content}
         </article>
         """
-    
     def generateBase(self):
-        with Repository.openFileToWrite(self.getCssFilePath(self.getCodeStyleCssName())) as f:
-            f.write("w")
-            f.write(HtmlFormatter().get_style_defs(".codehilite"))
-            
-        pageStyleCssSourcePath = os.path.join(os.path.join(os.path.join(os.path.split(__file__)[0],"resource"),"css"),self.getPageStyleCssName())
-        pageStyleCssDestPath = self.getCssFilePath(self.getPageStyleCssName())
-        
-        shutil.copy(pageStyleCssSourcePath, pageStyleCssDestPath)
+        for style in self.styles:
+            sourcePath = os.path.join(os.path.split(__file__)[0], style.getLocalPath())
+            destPath   = self.getCssFilePath(style.getName())
+            with Repository.openFileToWrite(destPath) as f:
+                pass
+            shutil.copy(sourcePath, destPath)
         
     def generateIndex(self, blogs):
         index = Index(blogs)
@@ -150,7 +123,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("usage: [dir]")
         exit(0)
-    repo = Repository(sys.argv[1])
-    # repo.clean()
+    repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')])
+    repo.clean()
     repo.generate()
             
