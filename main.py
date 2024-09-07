@@ -60,7 +60,7 @@ class Repository:
         for style in self.styles:
             sourcePath = os.path.join(os.path.split(__file__)[0], style.getLocalPath())
             destPath   = self.getCssFilePath(style.getName())
-            with Repository.openFileToWrite(destPath) as f:
+            with self.openFileToWrite(destPath) as f:
                 pass
             shutil.copy(sourcePath, destPath)
         
@@ -83,13 +83,13 @@ class Repository:
             return
         shutil.rmtree(self.getHtmlRootPath())
         
-    def openFileToWrite(path):
+    def openFileToWrite(self, path):
         """open a file for writing. if the file not exists, create it.
            create corresponding directorys if needed"""
         directory = os.path.dirname(path)
         if not Repository.isDirExist(directory):
             os.makedirs(directory)
-        f = open(path, "w")
+        f = open(path, "w", encoding=self.charset)
         return f
     
     def convertAll(self):
@@ -106,13 +106,13 @@ class Repository:
                 realpath = os.path.join(root,file)
                 relpath = os.path.relpath(realpath, self.dir)
                 
-                with open(realpath, "r") as f:
+                with open(realpath, "r", encoding=self.charset) as f:
                     md = f.read()
                     html = self.convertMd2Html(md)
                     
                 relHtmlPath = relpath.removesuffix(".md")+".html"
                 htmlPath = os.path.join(self.getHtmlRootPath(), relHtmlPath)
-                with Repository.openFileToWrite(htmlPath) as f:
+                with self.openFileToWrite(htmlPath) as f:
                     f.write(html)
                 blogs.append((file.removesuffix(".md"), relHtmlPath))
         return blogs
