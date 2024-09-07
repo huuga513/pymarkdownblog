@@ -6,25 +6,17 @@ class Index:
         """
         self.articles = articles
 
-    def generateIndex(self, output_file):
+    def generateIndex(self, output_file, template=lambda x:x):
         """
         生成一个index.html文件，包含文章名和对应的链接。
         :param output_file: 输出的HTML文件名，默认为'index.html'
         """
+        content = "<h1>文章目录</h1>"
+        for title, url in self.articles:
+            content += (f'<li><a href="{url}">{title}</a></li>\n')
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write('<!DOCTYPE html><meta charset="UTF-8">\n')
-            f.write("<html>\n")
-            f.write("<head>\n")
-            f.write("    <title>文章索引</title>\n")
-            f.write("</head>\n")
-            f.write("<body>\n")
-            f.write("    <h1>文章索引</h1>\n")
-            f.write("    <ul>\n")
-            for title, url in self.articles:
-                f.write(f'        <li><a href="{url}">{title}</a></li>\n')
-            f.write("    </ul>\n")
-            f.write("</body>\n")
-            f.write("</html>\n")
+            f.write(template(content))
+            
 
         print(f"Index file '{output_file}' has been generated successfully.")
 

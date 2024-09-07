@@ -13,7 +13,7 @@ from style import PageStyle
 def getPkgResourcePath():
     return os.module
 class Repository:
-    def __init__(self, directory, styles = [], charset="UTF-8"):
+    def __init__(self, directory, styles = [], charset="UTF-8",  ignoreDirs = ["private","log"]):
         self.dir = directory
         self.charset = charset
         self.styles = styles
@@ -65,7 +65,7 @@ class Repository:
         
     def generateIndex(self, blogs):
         index = Index(blogs)
-        index.generateIndex(os.path.join(self.getHtmlRootPath(),"index.html"))
+        index.generateIndex(os.path.join(self.getHtmlRootPath(),"index.html"), self.generateMdHtmlTemplate())
     
     def convertMd2Html(self, md):
         extensions = ["extra",
@@ -77,6 +77,7 @@ class Repository:
         return html
     
     def clean(self):
+        # TODO: not remove .git dir
         if not Repository.isDirExist(self.getHtmlRootPath()):
             return
         shutil.rmtree(self.getHtmlRootPath())
@@ -96,6 +97,8 @@ class Repository:
             keep the directory struct"""
         blogs = []
         for root, dirs, files in os.walk(self.dir):
+            if root in self.ignoreDirs:
+                continue
             for file in files:
                 if not file.endswith(".md"):
                     continue
@@ -120,10 +123,14 @@ class Repository:
         
                     
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("usage: [dir]")
+    argc = len(sys.argv)
+    if len(sys.argv) < 2:
+        print("usage: [dir] <ignore dir>")
         exit(0)
-    repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')])
-    repo.clean()
+    if argc == 2:
+        repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')])
+    else:
+        repo =  Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')], ignoreDirs=sys.argv[2])
+    # repo.clean()
     repo.generate()
             
