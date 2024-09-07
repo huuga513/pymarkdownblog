@@ -17,6 +17,7 @@ class Repository:
         self.dir = directory
         self.charset = charset
         self.styles = styles
+        self.ignoreDirs = ignoreDirs
         # check if the dir exists
         if not Repository.isDirExist(directory):
             raise Exception("Directory not exists!")
