@@ -1,10 +1,26 @@
 import os
-class Style:
+class Element:
+    def __init__(self):
+        pass
+    def header(self):
+        return ""
+
+class MathJaxScript(Element):
+    def __init__(self, url):
+        self.url = url
+        return
+    def header(self):
+        return f'<script id="MathJax-script" async src="{self.url}"></script>'
+class Style(Element):
     def __init__(self, localpath):
         self.filename = os.path.basename(localpath)
         self.filepath = localpath
+        self.remotepath = None
         
-    def header(self, remotepath):
+    def setRemotePath(self, remotepath):
+        self.remotepath = remotepath
+        
+    def header(self):
         return ""
 
     def getLocalPath(self):
@@ -14,14 +30,14 @@ class Style:
         return self.filename
     
 class CodeStyle(Style):
-    def header(self, remotepath):
-        return f"""<link rel="stylesheet" href="{remotepath}">"""
+    def header(self):
+        return f"""<link rel="stylesheet" href="{self.remotepath}">"""
     
 class PageStyle(Style):
-    def header(self, remotepath):
+    def header(self):
         return f"""
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{remotepath}">
+        <link rel="stylesheet" href="{self.remotepath}">
         <style>
             .markdown-body {{
                 box-sizing: border-box;

@@ -7,15 +7,19 @@ import pygments
 from pygments.formatters import HtmlFormatter
 from index import Index
 from l2m4m import LaTeX2MathMLExtension
+from style import Style
 from style import CodeStyle
 from style import PageStyle
+from style import MathJaxScript
 
 def getPkgResourcePath():
     return os.module
 class Repository:
-    def __init__(self, directory, styles = [], charset="UTF-8",  ignoreDirs = ["private","log"]):
+    def __init__(self, directory, elemnets = [], charset="UTF-8",  ignoreDirs = []):
         self.dir = directory
         self.charset = charset
+        self.elemnets = elemnets
+        styles = filter(lambda e: isinstance(e, Style), elemnets)
         self.styles = styles
         self.ignoreDirs = ignoreDirs
         # check if the dir exists
@@ -48,10 +52,11 @@ class Repository:
         return os.path.join("/",relpath)
     
     def generateMdHtmlTemplate(self):
-        styleHeaders = ''.join([style.header(self.localPathToNetPath(self.getCssFilePath(style.getName()))) for style in self.styles])
+        headers = ''.join([element.header() for element in self.elemnets])
+        
         return lambda content: f"""
         <meta charset={self.charset}>
-        {styleHeaders}
+        {headers}
         <article class="markdown-body">
         {content}
         </article>
@@ -63,6 +68,7 @@ class Repository:
             with self.openFileToWrite(destPath) as f:
                 pass
             shutil.copy(sourcePath, destPath)
+            style.setRemotePath(self.localPathToNetPath(destPath))
         
     def generateIndex(self, blogs):
         index = Index(blogs)
@@ -71,7 +77,6 @@ class Repository:
     def convertMd2Html(self, md):
         extensions = ["extra",
                       "codehilite",
-                      LaTeX2MathMLExtension(),
                       ]
         t = self.generateMdHtmlTemplate()
         html = t(markdown.markdown(md, extensions=extensions))
@@ -129,7 +134,7 @@ if __name__ == "__main__":
         print("usage: [dir] <ignore dir>")
         exit(0)
     if argc == 2:
-        repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')])
+        repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css'), MathJaxScript("/mathjax/tex-mml-chtml.js")])
     else:
         repo =  Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')], ignoreDirs=sys.argv[2])
     # repo.clean()
