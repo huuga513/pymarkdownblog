@@ -10,7 +10,7 @@ class MathJaxScript(Element):
         self.url = url
         return
     def header(self):
-        return f'<script id="MathJax-script" async src="{self.url}"></script>'
+        return '<script>MathJax={tex:{inlineMath:[[\'$\',\'$\']]},};</script>'+ f'<script id="MathJax-script" async src="{self.url}"></script>'
 class Style(Element):
     def __init__(self, localpath):
         self.filename = os.path.basename(localpath)
