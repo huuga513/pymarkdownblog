@@ -134,7 +134,7 @@ if __name__ == "__main__":
         print("usage: [dir] <ignore dir>")
         exit(0)
     if argc == 2:
-        repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css'), MathJaxScript("/mathjax/tex-mml-chtml.js")])
+        repo = Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css'), MathJaxScript("https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.js")])
     else:
         repo =  Repository(sys.argv[1], [CodeStyle('resource/css/styles.css'), PageStyle('resource/css/github-markdown-light.css')], ignoreDirs=sys.argv[2])
     # repo.clean()
